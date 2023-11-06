@@ -1,0 +1,240 @@
+package org.skull.king.domain.core
+
+import io.mockk.every
+import io.mockk.mockkConstructor
+import io.mockk.unmockkConstructor
+import io.quarkus.test.junit.QuarkusTest
+import jakarta.inject.Inject
+import org.assertj.core.api.Assertions
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.untilAsserted
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.skull.king.application.infrastructure.IdGenerator
+import org.skull.king.application.infrastructure.framework.command.CommandBus
+import org.skull.king.application.infrastructure.framework.query.QueryBus
+import org.skull.king.core.domain.*
+import org.skull.king.core.domain.state.Started
+import org.skull.king.core.usecases.*
+import org.skull.king.core.usecases.captor.ReadCard
+import java.time.Duration
+import java.time.temporal.ChronoUnit
+
+@QuarkusTest
+class FullGameTest {
+
+    @Inject
+    lateinit var commandBus: CommandBus
+
+    @Inject
+    lateinit var queryBus: QueryBus
+
+    @BeforeEach
+    fun setUp() {
+        mockkConstructor(Deck::class)
+        every { anyConstructed<Deck>().pop() } returnsMany (fullDeckMocked)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkConstructor(Deck::class)
+    }
+
+    @Test
+    fun `Should end the game at the end of the 10th round`() {
+        lateinit var firstPlayer: Player
+        lateinit var secondPlayer: Player
+
+        var firstPlayerCard = 0
+        var secondPlayerCard = 1
+
+        val start = StartSkullKing(gameId, players)
+        val startedEvent = commandBus.send(start).second.first() as Started
+
+        firstPlayer = startedEvent.players.first()
+        secondPlayer = startedEvent.players.last()
+
+        repeat((1..10).count()) { currentRound ->
+
+            println("--- ROUND ${currentRound + 1}")
+
+            val firstAnnounce = AnnounceWinningCardsFoldCount(gameId, firstPlayer.id, 1)
+            val secondAnnounce = AnnounceWinningCardsFoldCount(gameId, secondPlayer.id, 0)
+
+            commandBus.send(firstAnnounce)
+            commandBus.send(secondAnnounce)
+
+            await atMost Duration.ofSeconds(5) untilAsserted {
+                val getFirstPlayer = GetPlayer(gameId, firstPlayer.id)
+                val f = queryBus.send(getFirstPlayer)
+                println("F${firstPlayer.id}: ${f.cards}; CARD: ${fullDeckMocked[firstPlayerCard]}: $firstPlayerCard")
+
+                val getSecondPlayer = GetPlayer(gameId, secondPlayer.id)
+                val s = queryBus.send(getSecondPlayer)
+                println("S${secondPlayer.id}: ${s.cards}; CARD: ${fullDeckMocked[secondPlayerCard]}: $secondPlayerCard")
+
+                Assertions.assertThat(f.cards).contains(ReadCard.from(fullDeckMocked[firstPlayerCard]))
+                Assertions.assertThat(s.cards).contains(ReadCard.from(fullDeckMocked[secondPlayerCard]))
+            }
+
+            repeat((0..currentRound).count()) { currentFold ->
+                println("--- FOLD ${currentFold + 1}")
+
+                commandBus.send(PlayCardSaga(gameId, firstPlayer.id, fullDeckMocked[firstPlayerCard]))
+
+                await atMost Duration.ofSeconds(5) untilAsserted {
+                    val getFirstPlayer = GetPlayer(gameId, firstPlayer.id)
+                    val f = queryBus.send(getFirstPlayer)
+
+                    Assertions.assertThat(f.cards).doesNotContain(ReadCard.from(fullDeckMocked[firstPlayerCard]))
+                }
+
+                commandBus.send(PlayCardSaga(gameId, secondPlayer.id, fullDeckMocked[secondPlayerCard]))
+
+                await atMost Duration.ofSeconds(5) untilAsserted {
+                    val getSecondPlayer = GetPlayer(gameId, secondPlayer.id)
+                    val s = queryBus.send(getSecondPlayer)
+
+                    Assertions.assertThat(s.cards).doesNotContain(ReadCard.from(fullDeckMocked[secondPlayerCard]))
+                }
+
+                firstPlayerCard += 2
+                secondPlayerCard += 2
+            }
+
+            val tmpPlayer = firstPlayer
+            firstPlayer = secondPlayer
+            secondPlayer = tmpPlayer
+        }
+
+        await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
+            queryBus.send(GetGame(gameId)).let { Assertions.assertThat(it.isEnded).isTrue }
+        }
+    }
+
+    private val fullDeckMocked = listOf(
+        Mermaid(),
+        SkullkingCard,
+
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(1, CardColor.BLUE),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(2, CardColor.BLUE),
+
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(5, CardColor.RED),
+
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(8, CardColor.RED),
+        ColoredCard(7, CardColor.RED),
+
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(8, CardColor.RED),
+        ColoredCard(7, CardColor.RED),
+        ColoredCard(10, CardColor.RED),
+        ColoredCard(9, CardColor.RED),
+
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(8, CardColor.RED),
+        ColoredCard(7, CardColor.RED),
+        ColoredCard(10, CardColor.RED),
+        ColoredCard(9, CardColor.RED),
+        ColoredCard(12, CardColor.RED),
+        ColoredCard(11, CardColor.RED),
+
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(1, CardColor.BLUE),
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(2, CardColor.BLUE),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(3, CardColor.BLUE),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(4, CardColor.BLUE),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(5, CardColor.BLUE),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(6, CardColor.BLUE),
+        ColoredCard(7, CardColor.RED),
+        ColoredCard(7, CardColor.BLUE),
+
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(1, CardColor.BLUE),
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(2, CardColor.BLUE),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(3, CardColor.BLUE),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(4, CardColor.BLUE),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(5, CardColor.BLUE),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(6, CardColor.BLUE),
+        ColoredCard(7, CardColor.RED),
+        ColoredCard(7, CardColor.BLUE),
+        ColoredCard(8, CardColor.RED),
+        ColoredCard(8, CardColor.BLUE),
+
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(1, CardColor.BLUE),
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(2, CardColor.BLUE),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(3, CardColor.BLUE),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(4, CardColor.BLUE),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(5, CardColor.BLUE),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(6, CardColor.BLUE),
+        ColoredCard(7, CardColor.RED),
+        ColoredCard(7, CardColor.BLUE),
+        ColoredCard(8, CardColor.RED),
+        ColoredCard(8, CardColor.BLUE),
+        ColoredCard(9, CardColor.RED),
+        ColoredCard(9, CardColor.BLUE),
+
+        ColoredCard(1, CardColor.RED),
+        ColoredCard(1, CardColor.BLUE),
+        ColoredCard(2, CardColor.RED),
+        ColoredCard(2, CardColor.BLUE),
+        ColoredCard(3, CardColor.RED),
+        ColoredCard(3, CardColor.BLUE),
+        ColoredCard(4, CardColor.RED),
+        ColoredCard(4, CardColor.BLUE),
+        ColoredCard(5, CardColor.RED),
+        ColoredCard(5, CardColor.BLUE),
+        ColoredCard(6, CardColor.RED),
+        ColoredCard(6, CardColor.BLUE),
+        ColoredCard(7, CardColor.RED),
+        ColoredCard(7, CardColor.BLUE),
+        ColoredCard(8, CardColor.RED),
+        ColoredCard(8, CardColor.BLUE),
+        ColoredCard(9, CardColor.RED),
+        ColoredCard(9, CardColor.BLUE),
+        ColoredCard(10, CardColor.RED),
+        ColoredCard(10, CardColor.BLUE)
+    )
+    private val players = listOf("1", "2")
+    private val gameId = IdGenerator().skullKingId()
+}

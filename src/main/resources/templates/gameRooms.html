@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/assets/main.css"/>
+</head>
+<body>
+<div class="top">
+    game rooms
+</div>
+
+<p>Hello {{user.userName}}</p>
+<div>
+    <form method="post">
+        <button type="submit">nouvelle</button>
+    </form>
+</div>
+{{#gameRooms.0}}
+    <h2>Persons:</h2>
+    <ul>
+        {{#gameRooms}}
+            <li>{{id}}</li>
+        {{/gameRooms}}
+    </ul>
+{{/gameRooms.0}}
+{{^gameRooms.0}}No rooms{{/gameRooms.0}}
+</body>
+</html>
