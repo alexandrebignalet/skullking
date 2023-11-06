@@ -1,6 +1,7 @@
 package org.skull.king.application.web.controller.authentication
 
-import io.quarkus.qute.Template
+import io.quarkus.qute.CheckedTemplate
+import io.quarkus.qute.TemplateInstance
 import jakarta.annotation.security.PermitAll
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
@@ -19,11 +20,15 @@ class AuthenticationResource {
     @Context
     lateinit var identity: SecurityContext
 
-    @Inject
-    lateinit var register: Template
 
     @Inject
     lateinit var idGenerator: IdGenerator
+
+    @CheckedTemplate
+    object Templates {
+        external fun register(): TemplateInstance
+    }
+
 
     @POST
     @Path("/register")
@@ -38,7 +43,7 @@ class AuthenticationResource {
     @Path("/register")
     @Produces(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML)
     fun register(): Response =
-        if (identity.userPrincipal == null) Response.ok(register).build()
+        if (identity.userPrincipal == null) Response.ok(Templates.register()).build()
         else redirectToGameRooms(identity.userPrincipal as User)
 
     private fun redirectToGameRooms(user: User) = Response
