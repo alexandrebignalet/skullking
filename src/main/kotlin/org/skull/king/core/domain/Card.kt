@@ -35,10 +35,28 @@ enum class CardType {
 )
 sealed class Card(val type: CardType) {
     open fun id(): String = type.name
+
+    companion object {
+        fun fromId(cardId: String, usage: ScaryMaryUsage): Card {
+            val split = cardId.split("__")
+            val type = CardType.valueOf(split.first())
+            return when (type) {
+                CardType.ESCAPE -> Escape
+                CardType.MERMAID -> Mermaid(MermaidName.valueOf(split[1]))
+                CardType.COLORED -> ColoredCard(split[2].toInt(), CardColor.valueOf(split[1]))
+                CardType.PIRATE -> Pirate(PirateName.valueOf(split[1]))
+                CardType.SCARY_MARY -> ScaryMary(usage)
+                CardType.SKULLKING -> SkullkingCard
+                CardType.KRAKEN -> Kraken
+                CardType.WHITE_WHALE -> WhiteWhale
+                CardType.BUTIN -> Butin
+            }
+        }
+    }
 }
 
 data class ColoredCard(val value: Int, val color: CardColor) : Card(CardType.COLORED) {
-    override fun id(): String = "${type}_${color}_$value"
+    override fun id(): String = "${type}__${color}__$value"
 }
 
 enum class CardColor { RED, BLUE, YELLOW, BLACK, GREEN, PURPLE }
@@ -64,12 +82,12 @@ enum class MermaidName {
 }
 
 data class Pirate(val name: PirateName) : Card(CardType.PIRATE) {
-    override fun id(): String = "${type}_$name"
+    override fun id(): String = "${type}__$name"
 }
 
 object SkullkingCard : Card(CardType.SKULLKING)
 data class Mermaid(val name: MermaidName = MermaidName.NONE) : Card(CardType.MERMAID) {
-    override fun id(): String = "${type}_$name"
+    override fun id(): String = "${type}__$name"
 }
 
 object Escape : Card(CardType.ESCAPE)

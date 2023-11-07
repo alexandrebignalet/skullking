@@ -54,8 +54,8 @@ class ConcurrencyIT {
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val game = queryBus.send(GetGame(gameId))
-            Assertions.assertThat(game.phase).isEqualTo(SkullKingPhase.CARDS)
-            Assertions.assertThat(game.scoreBoard).hasSize(players.size)
+            Assertions.assertThat(game?.phase).isEqualTo(SkullKingPhase.CARDS)
+            Assertions.assertThat(game?.scoreBoard).hasSize(players.size)
         }
     }
 }

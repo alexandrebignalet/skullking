@@ -86,7 +86,7 @@ class ScoreBonusTest {
 
         // Then
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
 
             Assertions.assertThat(game.scoreBoard[firstPlayer.id]?.find { it.roundNb == firstRoundNb }?.announced)
                 .isEqualTo(firstFoldWinnerAnnounce)
@@ -143,7 +143,7 @@ class ScoreBonusTest {
 
         // The winner gains a potential bonus
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
 
             Assertions.assertThat(game.scoreBoard[newThirdPlayer]?.find { it.roundNb == secondRoundNb }?.announced)
                 .isEqualTo(futureWinnerAnnounce)
@@ -176,7 +176,7 @@ class ScoreBonusTest {
 
         // At the end of the round the bonus is kept
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
 
             Assertions.assertThat(game.scoreBoard[newThirdPlayer]?.find { it.roundNb == secondRoundNb }?.announced)
                 .isEqualTo(futureWinnerAnnounce)
@@ -222,7 +222,7 @@ class ScoreBonusTest {
 
         // The winner gains a potential bonus
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
 
             Assertions.assertThat(game.scoreBoard[newThirdPlayer]?.find { it.roundNb == secondRoundNb }?.announced)
                 .isEqualTo(futureWinnerAnnounce)
@@ -253,7 +253,7 @@ class ScoreBonusTest {
 
         // At the end of the round the bonus is kept
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
 
             Assertions.assertThat(game.scoreBoard[newThirdPlayer]?.find { it.roundNb == secondRoundNb }?.announced)
                 .isEqualTo(futureWinnerAnnounce)

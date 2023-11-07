@@ -80,7 +80,7 @@ class MultiFoldPlayCardTest {
         // Then
         await atMost Duration.ofSeconds(5) untilAsserted {
             val game = queryBus.send(GetGame(gameId))
-            Assertions.assertThat(game.scoreBoard[firstPlayer.id]?.find { it.roundNb == firstRoundNb }?.announced)
+            Assertions.assertThat(game!!.scoreBoard[firstPlayer.id]?.find { it.roundNb == firstRoundNb }?.announced)
                 .isEqualTo(firstFoldWinnerAnnounce)
             Assertions.assertThat(game.scoreBoard[firstPlayer.id]?.find { it.roundNb == firstRoundNb }?.done)
                 .isEqualTo(1)
@@ -119,7 +119,7 @@ class MultiFoldPlayCardTest {
 
         // Then
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
             Assertions.assertThat(game.scoreBoard[newSecondPlayer]?.find { it.roundNb == secondRoundNb }?.announced)
                 .isEqualTo(futureWinnerAnnounce)
             Assertions.assertThat(game.scoreBoard[newSecondPlayer]?.find { it.roundNb == secondRoundNb }?.done)
@@ -176,7 +176,7 @@ class MultiFoldPlayCardTest {
 
         val getGame = GetGame(gameId)
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-            val game = queryBus.send(getGame)
+            val game = queryBus.send(getGame)!!
             Assertions.assertThat(game.fold.size).isEqualTo(0)
         }
 
@@ -193,14 +193,14 @@ class MultiFoldPlayCardTest {
         Assertions.assertThat(ok).isInstanceOf(Pair::class.java)
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-            val game = queryBus.send(getGame)
+            val game = queryBus.send(getGame)!!
             Assertions.assertThat(game.currentPlayerId).isEqualTo(newSecondPlayer)
         }
     }
 
     @Test
     fun `Should mark current player id on new round and after card played`() {
-        val getGame = { queryBus.send(GetGame(gameId)) }
+        val getGame = { queryBus.send(GetGame(gameId))!! }
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             Assertions.assertThat(getGame().currentPlayerId == secondPlayer.id).isTrue

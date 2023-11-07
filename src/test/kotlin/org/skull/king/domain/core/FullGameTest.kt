@@ -110,7 +110,7 @@ class FullGameTest {
         }
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-            queryBus.send(GetGame(gameId)).let { Assertions.assertThat(it.isEnded).isTrue }
+            queryBus.send(GetGame(gameId)).let { Assertions.assertThat(it?.isEnded).isTrue }
         }
     }
 

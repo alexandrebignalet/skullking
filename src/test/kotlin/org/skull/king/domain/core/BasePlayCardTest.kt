@@ -106,7 +106,7 @@ class BasePlayCardTest {
 
             await atMost Duration.ofSeconds(5) untilAsserted {
                 val game = queryBus.send(GetGame(gameId))
-                Assertions.assertThat(game.fold).contains(Play(currentPlayer.id, ReadCard.from(cardPlayed)))
+                Assertions.assertThat(game?.fold).contains(Play(currentPlayer.id, ReadCard.from(cardPlayed)))
             }
         }
 
@@ -133,7 +133,7 @@ class BasePlayCardTest {
             Assertions.assertThatThrownBy { commandBus.send(playCard) }.isInstanceOf(NotYourTurnError::class.java)
 
             val game = queryBus.send(GetGame(startedEvent.gameId))
-            Assertions.assertThat(game.currentPlayerId).isEqualTo(currentPlayer.id)
+            Assertions.assertThat(game?.currentPlayerId).isEqualTo(currentPlayer.id)
 
             // First two times in a row
             val secondCardPlay = (currentPlayer as NewPlayer).cards.first()
@@ -243,7 +243,7 @@ class BasePlayCardTest {
                 val getGame = GetGame(startedEvent.gameId)
                 val game = queryBus.send(getGame)
 
-                val getPlayer = GetPlayer(game.id, firstPlayer.id)
+                val getPlayer = GetPlayer(game!!.id, firstPlayer.id)
                 val player = queryBus.send(getPlayer)
 
                 Assertions.assertThat(player.cards).doesNotContain(ReadCard.from(playedCard))
@@ -284,7 +284,7 @@ class BasePlayCardTest {
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
                 val game = queryBus.send(GetGame(gameId))
 
-                Assertions.assertThat(game.scoreBoard[firstPlayer.id]?.find { it.roundNb == roundNb }?.announced)
+                Assertions.assertThat(game!!.scoreBoard[firstPlayer.id]?.find { it.roundNb == roundNb }?.announced)
                     .isEqualTo(futureWinnerAnnounce)
                 Assertions.assertThat(game.scoreBoard[firstPlayer.id]?.find { it.roundNb == roundNb }?.done)
                     .isEqualTo(1)

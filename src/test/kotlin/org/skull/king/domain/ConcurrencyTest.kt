@@ -94,8 +94,8 @@ class ConcurrencyTest {
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val game = queryBus.send(GetGame(gameId))
-            Assertions.assertThat(game.phase).isEqualTo(SkullKingPhase.CARDS)
-            Assertions.assertThat(game.scoreBoard).hasSize(players.size)
+            Assertions.assertThat(game?.phase).isEqualTo(SkullKingPhase.CARDS)
+            Assertions.assertThat(game?.scoreBoard).hasSize(players.size)
         }
     }
 
@@ -131,7 +131,7 @@ class ConcurrencyTest {
         threads.forEach { it.join() }
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
             val winnerScore = game.scoreBoard[firstPlayer.id]?.find { it.roundNb == 1 }
             Assertions.assertThat(winnerScore).isEqualTo(
                 RoundScore(

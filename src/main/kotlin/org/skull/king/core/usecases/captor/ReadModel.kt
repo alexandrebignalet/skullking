@@ -2,6 +2,8 @@ package org.skull.king.core.usecases.captor
 
 import org.skull.king.core.domain.*
 import org.skull.king.core.domain.state.*
+import org.skull.king.core.usecases.captor.SkullKingPhase.ANNOUNCEMENT
+import kotlin.math.abs
 
 data class ReadSkullKing(
     val id: String,
@@ -14,7 +16,7 @@ data class ReadSkullKing(
     val scoreBoard: ScoreBoard = mapOf()
 ) {
     fun onPlayerAnnounced(event: PlayerAnnounced) = copy(
-        phase = if (event.isLast) SkullKingPhase.CARDS else SkullKingPhase.ANNOUNCEMENT,
+        phase = if (event.isLast) SkullKingPhase.CARDS else ANNOUNCEMENT,
         scoreBoard = scoreBoard.entries.associate { (playerId, roundScores) ->
             val newRoundScores =
                 if (event.playerId == playerId)
@@ -29,9 +31,9 @@ data class ReadSkullKing(
             currentPlayerId = nextPlayerAfter(currentPlayerId),
             players = players.map { player ->
                 if (player.id == event.playerId) {
-                    val cards = player.cards.toMutableList()
-                    cards.remove(card)
-                    player.copy(cards = cards)
+                    val cardIds = player.cards.map { it.id }.toMutableList()
+                    cardIds.remove(card.id)
+                    player.copy(cards = cardIds.map { id -> player.cards.first { id == it.id } })
                 } else player
             },
             fold = fold + Play(event.playerId, card),
@@ -71,7 +73,7 @@ data class ReadSkullKing(
 
     fun onNewRoundStarted(event: NewRoundStarted) = copy(
         roundNb = event.roundNb,
-        phase = SkullKingPhase.ANNOUNCEMENT,
+        phase = ANNOUNCEMENT,
         currentPlayerId = event.players.first().id,
         players = event.players.map { ReadPlayer(it.id, it.gameId, it.cards.map(ReadCard::from)) }
     )
@@ -91,13 +93,19 @@ data class ReadSkullKing(
                     )
                 },
                 roundNb = 1,
-                phase = SkullKingPhase.ANNOUNCEMENT,
+                phase = ANNOUNCEMENT,
                 currentPlayerId = firstPlayerId,
                 scoreBoard = event.players.associate { it.id to listOf() }
             )
         }
     }
 
+    fun currentRoundScoreOf(playerId: String): RoundScore? = scoreBoard[playerId]?.find { it.roundNb == roundNb }
+    fun isAnnouncePhase() = phase == ANNOUNCEMENT
+    fun isCardsPhase() = phase == SkullKingPhase.CARDS
+    fun scoreOf(playerId: String) = scoreBoard[playerId]
+        ?.filter { !isEnded || roundNb == it.roundNb }
+        ?.sumOf(RoundScore::score)
 }
 
 typealias ScoreBoard = Map<String, List<RoundScore>>
@@ -109,7 +117,19 @@ data class RoundScore(
     val done: Int = 0,
     val potentialBonus: Int = 0,
     val roundNb: RoundNb
-)
+) {
+    fun score() = when {
+        announced == done -> when {
+            announced == 0 -> 10 * roundNb
+            else -> announced * 20
+        } + potentialBonus
+
+        else -> when {
+            announced == 0 -> 10 * roundNb * -1
+            else -> abs(announced - done) * 10 * -1
+        }
+    }
+}
 
 enum class SkullKingPhase {
     ANNOUNCEMENT, CARDS
@@ -119,7 +139,12 @@ data class ReadPlayer(
     val id: String,
     val gameId: String,
     val cards: List<ReadCard> = listOf()
-)
+) {
+
+    fun playCardUrl(card: ReadCard) = "$gameId/players/$id/play"
+    fun announceUrl() = "$gameId/players/$id/announce"
+    fun announceAvailable(): List<Int> = (0..cards.size).toList()
+}
 
 data class Play(
     val playerId: String,
@@ -139,20 +164,23 @@ data class ReadCard(
             is ColoredCard -> ReadCard(
                 type = card.type.name,
                 value = card.value,
-                color = card.color.name
+                color = card.color.name,
+                id = card.id()
             )
 
-            is Mermaid -> ReadCard(type = card.type.name, name = card.name.name)
-            is Pirate -> ReadCard(type = card.type.name, name = card.name.name)
-            is ScaryMary -> ReadCard(type = card.type.name, usage = card.usage.name)
+            is Mermaid -> ReadCard(type = card.type.name, name = card.name.name, id = card.id())
+            is Pirate -> ReadCard(type = card.type.name, name = card.name.name, id = card.id())
+            is ScaryMary -> ReadCard(type = card.type.name, usage = card.usage.name, id = card.id())
 
-            Butin -> ReadCard(type = card.type.name)
-            Escape -> ReadCard(type = card.type.name)
-            Kraken -> ReadCard(type = card.type.name)
-            SkullkingCard -> ReadCard(type = card.type.name)
-            WhiteWhale -> ReadCard(type = card.type.name)
+            Butin -> ReadCard(type = card.type.name, id = card.id())
+            Escape -> ReadCard(type = card.type.name, id = card.id())
+            Kraken -> ReadCard(type = card.type.name, id = card.id())
+            SkullkingCard -> ReadCard(type = card.type.name, id = card.id())
+            WhiteWhale -> ReadCard(type = card.type.name, id = card.id())
         }
     }
+
+    fun isScaryMary() = this.type == CardType.SCARY_MARY.name
 }
 
 enum class ReadCardType { SKULLKING, ESCAPE, PIRATE, SCARY_MARY, COLORED, MERMAID }

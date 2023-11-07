@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/main.css"/>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div class="top">
+    game rooms
+</div>
+
+<p>Hello {user.userName}</p>
+<div>
+    {skullKing.id}
+
+    <ul>
+        {#for player in skullKing.players}
+            {#let roundScore = skullKing.currentRoundScoreOf(player.id) }
+                <li>{gameRoom.userNameOf(player.id)}
+                {#if roundScore}
+                    {roundScore.announced} -
+                    {roundScore.done} -
+                    {roundScore.potentialBonus} -
+                {/if}
+                {skullKing.scoreOf(player.id)}
+                </li>
+            {/let}
+        {/for}
+    </ul>
+
+    <hr/>
+
+    {#if skullKing.isEnded}
+        Partie terminée
+    {#else}
+
+        {#for play in skullKing.fold}
+            <div>
+            {gameRoom.userNameOf(play.playerId)} - {play.card.id}
+            </div>
+        {/for}
+
+        {#if skullKing.isAnnouncePhase()}
+            {#for announce in currentPlayer.announceAvailable()}
+                <form method="post" action="{currentPlayer.announceUrl()}">
+                <input type="hidden" value="{announce}" name="announce">
+                <button type="submit">{announce}</button>
+                </form>
+            {/for}
+        {/if}
+
+        <hr/>
+        {skullKing.phase}
+
+        {#if skullKing.isCardsPhase()}
+        {/if}
+
+
+        {#for card in currentPlayer.cards}
+            <div style="border: 1px solid black">
+            {card.id}
+            <form method="post" action="{currentPlayer.playCardUrl(card)}">
+            {#if card.isScaryMary()}
+                <select name="usage">
+                    <option value="PIRATE">pirate</option>
+                    <option value="ESCAPE">escape</option>
+                </select>
+            {/if}
+            <input type="hidden" value="{card.id}" name="cardId">
+            {#if ! skullKing.isAnnouncePhase()}
+                <button type="submit">choisir</button>
+            {/if}
+            </form>
+            </div>
+        {/for}
+    {/if}
+</div>
+</body>
+</html>

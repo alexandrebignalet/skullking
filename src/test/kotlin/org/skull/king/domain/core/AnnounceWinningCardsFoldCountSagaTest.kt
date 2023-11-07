@@ -82,7 +82,7 @@ class AnnounceWinningCardsFoldCountSagaTest {
             // QUERY
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
                 val query = GetGame(gameId)
-                val game = queryBus.send(query)
+                val game = queryBus.send(query)!!
                 Assertions.assertThat(game.id).isEqualTo(gameId)
                 Assertions.assertThat(game.scoreBoard[announcingPlayerId]?.find { it.roundNb == roundNb }?.announced)
                     .isEqualTo(firstPlayerAnnounce)

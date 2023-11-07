@@ -4,8 +4,8 @@ import com.github.f4b6a3.ksuid.KsuidCreator
 import jakarta.enterprise.context.ApplicationScoped
 
 const val SKULLKING_ID_PREFIX = "skg_"
-const val USER_ID_PREFIX = "skg_"
-const val GAME_ROOM_ID_PREFIX = "skg_"
+const val USER_ID_PREFIX = "usr_"
+const val GAME_ROOM_ID_PREFIX = "gr_"
 const val BOT_ID_PREFIX = "bot_"
 
 @ApplicationScoped

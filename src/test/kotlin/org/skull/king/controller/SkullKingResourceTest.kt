@@ -163,7 +163,7 @@ class SkullKingResourceTest {
         val (gameId) = api.skullKing.start(users).`as`(StartResponse::class.java)
         users.forEach { api.skullKing.announce(it, gameId, it.id, 1) }
         val game = queryBus.send(GetGame(gameId))
-        val currentPlayerId = game.currentPlayerId
+        val currentPlayerId = game?.currentPlayerId
 
         // When
         val request = """{

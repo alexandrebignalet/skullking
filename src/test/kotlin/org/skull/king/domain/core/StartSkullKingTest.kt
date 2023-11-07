@@ -101,7 +101,7 @@ class StartSkullKingTest {
             val gameStarted = response.second.first() as Started
 
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                val game = queryBus.send(GetGame(gameId))
+                val game = queryBus.send(GetGame(gameId))!!
                 Assertions.assertThat(game.currentPlayerId).isEqualTo(gameStarted.players.first().id)
             }
         }

@@ -119,13 +119,13 @@ class AnnounceStateTest {
 
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val game = queryBus.send(GetGame(startedEvent.gameId))
-            Assertions.assertThat(game.roundNb).isEqualTo(2)
+            Assertions.assertThat(game?.roundNb).isEqualTo(2)
         }
 
         var game = queryBus.send(GetGame(startedEvent.gameId))
 
 
-        var newFirstPlayer = queryBus.send(GetPlayer(game.id, secondPlayer.id))
+        var newFirstPlayer = queryBus.send(GetPlayer(game!!.id, secondPlayer.id))
         val newSecondPlayer = queryBus.send(GetPlayer(game.id, thirdPlayer.id))
         val newThirdPlayer = queryBus.send(GetPlayer(game.id, firstPlayer.id))
 
@@ -153,11 +153,11 @@ class AnnounceStateTest {
         // second player wins
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val result = queryBus.send(GetGame(startedEvent.gameId))
-            Assertions.assertThat(result.currentPlayerId).isEqualTo(thirdPlayer.id)
+            Assertions.assertThat(result?.currentPlayerId).isEqualTo(thirdPlayer.id)
         }
 
         game = queryBus.send(GetGame(startedEvent.gameId))
-        Assertions.assertThat(game.currentPlayerId).isEqualTo(thirdPlayer.id)
+        Assertions.assertThat(game?.currentPlayerId).isEqualTo(thirdPlayer.id)
 
         // second & last fold
         listOf(
@@ -169,13 +169,13 @@ class AnnounceStateTest {
         // round finished first player to start rotate
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val result = queryBus.send(GetGame(startedEvent.gameId))
-            Assertions.assertThat(result.roundNb).isEqualTo(3)
+            Assertions.assertThat(result?.roundNb).isEqualTo(3)
         }
 
         game = queryBus.send(GetGame(startedEvent.gameId))
-        Assertions.assertThat(game.roundNb).isEqualTo(3)
+        Assertions.assertThat(game?.roundNb).isEqualTo(3)
 
-        newFirstPlayer = queryBus.send(GetPlayer(game.id, thirdPlayer.id))
+        newFirstPlayer = queryBus.send(GetPlayer(game!!.id, thirdPlayer.id))
 
         Assertions.assertThat(game.currentPlayerId).isEqualTo(newFirstPlayer.id)
 
@@ -195,11 +195,11 @@ class AnnounceStateTest {
         // third player wins
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val result = queryBus.send(GetGame(startedEvent.gameId))
-            Assertions.assertThat(result.currentPlayerId).isEqualTo(secondPlayer.id)
+            Assertions.assertThat(result?.currentPlayerId).isEqualTo(secondPlayer.id)
         }
 
         game = queryBus.send(GetGame(startedEvent.gameId))
-        Assertions.assertThat(game.currentPlayerId).isEqualTo(secondPlayer.id)
+        Assertions.assertThat(game?.currentPlayerId).isEqualTo(secondPlayer.id)
 
         // second fold
         listOf(
@@ -218,13 +218,13 @@ class AnnounceStateTest {
         // round finished first player to start rotate
         await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
             val result = queryBus.send(GetGame(startedEvent.gameId))
-            Assertions.assertThat(result.roundNb).isEqualTo(4)
+            Assertions.assertThat(result?.roundNb).isEqualTo(4)
         }
 
         game = queryBus.send(GetGame(startedEvent.gameId))
-        Assertions.assertThat(game.roundNb).isEqualTo(4)
+        Assertions.assertThat(game?.roundNb).isEqualTo(4)
 
-        newFirstPlayer = queryBus.send(GetPlayer(game.id, firstPlayer.id))
+        newFirstPlayer = queryBus.send(GetPlayer(game!!.id, firstPlayer.id))
 
         Assertions.assertThat(game.currentPlayerId).isEqualTo(newFirstPlayer.id)
     }

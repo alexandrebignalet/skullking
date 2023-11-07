@@ -26,6 +26,7 @@ class AuthenticationResource {
 
     @CheckedTemplate
     object Templates {
+        @JvmStatic
         external fun register(): TemplateInstance
     }
 

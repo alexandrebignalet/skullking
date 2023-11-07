@@ -70,7 +70,7 @@ class ReadySkullKingTest {
         commandBus.send(secondPlayCard)
 
         await atMost Duration.ofSeconds(5) untilAsserted {
-            val game = queryBus.send(GetGame(gameId))
+            val game = queryBus.send(GetGame(gameId))!!
             Assertions.assertThat(game.roundNb).isEqualTo(2)
         }
     }

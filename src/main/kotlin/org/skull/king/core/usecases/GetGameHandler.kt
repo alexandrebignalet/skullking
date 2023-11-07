@@ -6,7 +6,7 @@ import org.skull.king.application.infrastructure.framework.query.QueryHandler
 import org.skull.king.core.usecases.captor.ReadSkullKing
 import org.skull.king.core.usecases.captor.ReadSkullKingRepository
 
-data class GetGame(val gameId: String) : Query<ReadSkullKing>
+data class GetGame(val gameId: String) : Query<ReadSkullKing?>
 
 @ApplicationScoped
 class GetGameHandler(val repository: ReadSkullKingRepository) : QueryHandler<GetGame, ReadSkullKing?> {

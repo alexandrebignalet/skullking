@@ -56,7 +56,7 @@ class QueryModelTest {
             commandBus.send(StartSkullKing(gameId, players))
 
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                queryBus.send(GetGame(gameId)).let { game ->
+                queryBus.send(GetGame(gameId))!!.let { game ->
                     Assertions.assertThat(game.phase).isEqualTo(SkullKingPhase.ANNOUNCEMENT)
                 }
             }
@@ -71,7 +71,7 @@ class QueryModelTest {
             }
 
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                queryBus.send(GetGame(gameId)).let { game ->
+                queryBus.send(GetGame(gameId))!!.let { game ->
                     Assertions.assertThat(game.phase).isEqualTo(SkullKingPhase.CARDS)
                 }
             }
@@ -89,7 +89,7 @@ class QueryModelTest {
             commandBus.send(PlayCardSaga(gameId, started.players.last().id, mockedCard.last()))
 
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                queryBus.send(GetGame(gameId)).let { game ->
+                queryBus.send(GetGame(gameId))!!.let { game ->
                     Assertions.assertThat(game.phase).isEqualTo(SkullKingPhase.ANNOUNCEMENT)
                 }
             }
@@ -103,7 +103,7 @@ class QueryModelTest {
             val started = commandBus.send(StartSkullKing(gameId, players)).second.single() as Started
 
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                queryBus.send(GetGame(gameId)).let { game ->
+                queryBus.send(GetGame(gameId))!!.let { game ->
                     Assertions.assertThat(game.currentPlayerId).isEqualTo(started.players.first().id)
                 }
             }
@@ -120,7 +120,7 @@ class QueryModelTest {
             commandBus.send(PlayCardSaga(gameId, started.players.first().id, mockedCard.first()))
 
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                queryBus.send(GetGame(gameId)).let { game ->
+                queryBus.send(GetGame(gameId))!!.let { game ->
                     Assertions.assertThat(game.currentPlayerId).isEqualTo(started.players.last().id)
                 }
             }
@@ -128,7 +128,7 @@ class QueryModelTest {
             // First started the previous round, now we change second starts
             commandBus.send(PlayCardSaga(gameId, started.players.last().id, mockedCard.last()))
             await atMost Duration.of(5, ChronoUnit.SECONDS) untilAsserted {
-                queryBus.send(GetGame(gameId)).let { game ->
+                queryBus.send(GetGame(gameId))!!.let { game ->
                     Assertions.assertThat(game.currentPlayerId).isEqualTo(started.players.last().id)
                 }
             }

@@ -1,6 +1,6 @@
 package org.skull.king.game_room.infrastructure
 
-import jakarta.inject.Singleton
+import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import org.skull.king.application.infrastructure.IdGenerator
@@ -8,7 +8,7 @@ import org.skull.king.core.domain.GameConfiguration
 import org.skull.king.core.domain.GameLauncher
 import org.skull.king.game_room.domain.*
 
-@Singleton
+@ApplicationScoped
 class GameRoomService(
     private val repository: GameRoomRepository,
     private val launcher: GameLauncher,
@@ -66,4 +66,7 @@ class GameRoomService(
     }
 
     fun findAll() = repository.findAll()
+    fun findOneBy(gameId: String): GameRoom? {
+        return repository.findByGameId(gameId)
+    }
 }
