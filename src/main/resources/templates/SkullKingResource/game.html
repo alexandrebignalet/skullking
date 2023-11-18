@@ -75,5 +75,24 @@
         {/for}
     {/if}
 </div>
+<script type="module">
+    (function () {
+        const subscribeUrl = "{skullKing.subscribeUrl()}"
+
+        const evtSource = new EventSource(subscribeUrl);
+
+        evtSource.onmessage = (event) => {
+            console.log(event)
+        };
+
+        evtSource.addEventListener("ping", console.log)
+        evtSource.addEventListener("player_announced", console.log)
+        evtSource.addEventListener("card_played", console.log)
+        evtSource.addEventListener("new_round_finished", console.log)
+        evtSource.addEventListener("fold_settled", console.log)
+        evtSource.addEventListener("game_finished", console.log)
+        evtSource.addEventListener("game_started", console.log)
+    })()
+</script>
 </body>
 </html>

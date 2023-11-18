@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.restassured.RestAssured.given
 import io.restassured.response.Response
 import io.restassured.specification.RequestSpecification
-import jakarta.ws.rs.client.Entity
 import jakarta.ws.rs.core.MediaType
 import org.skull.king.application.infrastructure.authentication.AUTH_COOKIE_NAME
 import org.skull.king.application.infrastructure.authentication.User
-import org.skull.king.core.infrastructure.web.SkullKingResource.AnnounceWinningCardsFoldCountRequest
 import org.skull.king.game_room.domain.Configuration
 import org.skull.king.game_room.infrastructure.web.CreateGameRoomResponse
 
@@ -17,6 +15,7 @@ class ApiHelper {
     val skullKing = SkullKingApiHelper()
     val gameRoom = GameRoomHelper()
     val authentication = Authentication()
+
     companion object {
         val objectMapper = ObjectMapper()
     }

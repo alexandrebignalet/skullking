@@ -34,7 +34,7 @@ enum class CardType {
     JsonSubTypes.Type(value = WhiteWhale::class, name = "WHITE_WHALE"),
 )
 sealed class Card(val type: CardType) {
-    open fun id(): String = type.name
+    open val id get(): String = type.name
 
     companion object {
         fun fromId(cardId: String, usage: ScaryMaryUsage): Card {
@@ -56,7 +56,7 @@ sealed class Card(val type: CardType) {
 }
 
 data class ColoredCard(val value: Int, val color: CardColor) : Card(CardType.COLORED) {
-    override fun id(): String = "${type}__${color}__$value"
+    override val id get(): String = "${type}__${color}__$value"
 }
 
 enum class CardColor { RED, BLUE, YELLOW, BLACK, GREEN, PURPLE }
@@ -82,12 +82,12 @@ enum class MermaidName {
 }
 
 data class Pirate(val name: PirateName) : Card(CardType.PIRATE) {
-    override fun id(): String = "${type}__$name"
+    override val id get(): String = "${type}__$name"
 }
 
 object SkullkingCard : Card(CardType.SKULLKING)
 data class Mermaid(val name: MermaidName = MermaidName.NONE) : Card(CardType.MERMAID) {
-    override fun id(): String = "${type}__$name"
+    override val id get(): String = "${type}__$name"
 }
 
 object Escape : Card(CardType.ESCAPE)

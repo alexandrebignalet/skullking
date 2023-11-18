@@ -34,10 +34,22 @@ class AuthenticationResource {
     @POST
     @Path("/register")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    fun register(@FormParam("userName") userName: String): Response {
+    fun registerHTML(@FormParam("userName") userName: String): Response {
         val user = User(idGenerator.userId(), userName)
         return redirectToGameRooms(user)
     }
+
+    @POST
+    @Path("/register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    fun register(request: RegisterRequest): Response {
+        val user = User(idGenerator.userId(), request.userName)
+        return Response.ok()
+            .header("Set-Cookie", NewCookie.Builder(AUTH_COOKIE_NAME).value(user.name).build())
+            .build()
+    }
+
+    data class RegisterRequest(val userName: String)
 
 
     @GET

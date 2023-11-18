@@ -19,7 +19,7 @@ data class GameRoom(
 
     fun isFull() = users.count() == 6
 
-    fun joinUrl() = "game_rooms/$id/join"
+    fun joinUrl() = "game_rooms/$id/users"
     fun addBotUrl() = "game_rooms/$id/bots"
     fun skullKingUrl() = "games/$gameId"
     fun isStarted() = gameId != null

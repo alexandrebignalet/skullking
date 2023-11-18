@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.SecurityContext
 import org.skull.king.application.infrastructure.authentication.User
 import org.skull.king.application.infrastructure.framework.command.CommandBus
 import org.skull.king.application.infrastructure.framework.query.QueryBus
+import org.skull.king.application.infrastructure.notification.EventPubSub
 import org.skull.king.application.web.redirectToGame
 import org.skull.king.application.web.redirectToGameRoom
 import org.skull.king.core.domain.Card
@@ -32,6 +33,8 @@ class SkullKingResource(
     private val queryBus: QueryBus,
     private val gameRoomService: GameRoomService,
     private val context: SecurityContext,
+    private val identity: SecurityContext,
+    private val eventPubSub: EventPubSub
 ) {
 
     @CheckedTemplate
@@ -48,7 +51,7 @@ class SkullKingResource(
     @GET
     @Path("/{game_id}")
     @Produces(MediaType.TEXT_HTML)
-    fun game(@PathParam("game_id") gameId: String): Response = queryBus.send(GetGame(gameId)).let {
+    fun gameHTML(@PathParam("game_id") gameId: String): Response = queryBus.send(GetGame(gameId)).let {
         val gameRoom = gameRoomService.findOneBy(gameId)
         val user = context.userPrincipal
         if (it == null || gameRoom == null || user == null) {
@@ -63,6 +66,11 @@ class SkullKingResource(
         val currentPlayer = it.players.first { it.id == principal.id }
         Response.ok(Templates.game(it, principal, gameRoom, currentPlayer)).build()
     }
+
+    @GET
+    @Path("/{game_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun game(@PathParam("game_id") gameId: String): ReadSkullKing? = queryBus.send(GetGame(gameId))
 
     @POST
     @Path("/{game_id}/players/{player_id}/announce")
@@ -100,7 +108,7 @@ class SkullKingResource(
         @Valid request: PlayCardRequest
     ): Response {
 
-        val command = PlayCardSaga(gameId, playerId, request.card)
+        val command = PlayCardSaga(gameId, playerId, Card.fromId(request.cardId, request.usage))
 
         commandBus.send(command)
 
@@ -127,6 +135,6 @@ class SkullKingResource(
 
     data class AnnounceWinningCardsFoldCountRequest(val count: Int)
 
-    class PlayCardRequest(val card: Card)
+    class PlayCardRequest(val cardId: String, val usage: ScaryMaryUsage = ScaryMaryUsage.NOT_SET)
 
 }

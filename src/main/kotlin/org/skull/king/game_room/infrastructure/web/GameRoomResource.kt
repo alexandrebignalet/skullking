@@ -12,7 +12,6 @@ import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.core.SecurityContext
 import org.skull.king.application.infrastructure.IdGenerator
 import org.skull.king.application.infrastructure.authentication.User
-import org.skull.king.application.web.redirectToGame
 import org.skull.king.application.web.redirectToGameRoom
 import org.skull.king.game_room.domain.Configuration
 import org.skull.king.game_room.domain.GameRoom
@@ -44,6 +43,13 @@ class GameRoomResource {
         val user: User = context.userPrincipal as User
         val rooms = service.findAll()
         return Templates.gameRooms(rooms, user, error)
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    fun index(): List<GameRoom> {
+        val user: User = context.userPrincipal as User
+        return service.findAll()
     }
 
     @POST
@@ -90,22 +96,23 @@ class GameRoomResource {
     }
 
     @POST
+    @Path("/{game_room_id}/users")
+    @Produces(MediaType.TEXT_HTML)
+    fun joinHtml(
+        @PathParam("game_room_id") gameRoomId: String,
+    ): Response {
+        val user: User = context.userPrincipal as User
+        service.join(gameRoomId, GameUser.from(user))
+        return redirectToGameRoom()
+    }
+
+    @POST
     @Path("/{game_room_id}/launch")
     @Produces(MediaType.APPLICATION_JSON)
     fun launch(@PathParam("game_room_id") gameRoomId: String): Response {
         val user: User = context.userPrincipal as User
         val gameId = service.startGame(gameRoomId, user.id)
         return Response.ok(StartResponse(gameId)).build()
-    }
-
-    @POST
-    @Path("/{game_room_id}/launch")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_HTML)
-    fun launchHtml(@PathParam("game_room_id") gameRoomId: String): Response {
-        val user: User = context.userPrincipal as User
-        val gameId = service.startGame(gameRoomId, user.id)
-        return redirectToGame(gameId)
     }
 
     data class StartResponse(val gameId: String)

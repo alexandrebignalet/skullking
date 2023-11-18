@@ -20,7 +20,7 @@ import java.time.Instant
     JsonSubTypes.Type(value = PlayerAnnounced::class, name = PlayerAnnounced.EVENT_TYPE),
     JsonSubTypes.Type(value = CardPlayed::class, name = CardPlayed.EVENT_TYPE),
     JsonSubTypes.Type(value = FoldSettled::class, name = FoldSettled.EVENT_TYPE),
-    JsonSubTypes.Type(value = NewRoundStarted::class, name = NewRoundStarted.EVENT_TYPE),
+    JsonSubTypes.Type(value = RoundFinished::class, name = RoundFinished.EVENT_TYPE),
     JsonSubTypes.Type(value = GameFinished::class, name = GameFinished.EVENT_TYPE)
 )
 sealed class SkullKingEvent(
@@ -81,7 +81,7 @@ data class FoldSettled(
     }
 }
 
-data class NewRoundStarted(
+data class RoundFinished(
     val gameId: String,
     val roundNb: Int,
     val players: List<NewPlayer>,
@@ -89,7 +89,7 @@ data class NewRoundStarted(
 ) :
     SkullKingEvent(gameId, EVENT_TYPE) {
     companion object {
-        const val EVENT_TYPE = "new_round_finished"
+        const val EVENT_TYPE = "round_finished"
     }
 }
 

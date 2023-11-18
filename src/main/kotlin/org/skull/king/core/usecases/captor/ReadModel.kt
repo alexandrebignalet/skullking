@@ -3,6 +3,7 @@ package org.skull.king.core.usecases.captor
 import org.skull.king.core.domain.*
 import org.skull.king.core.domain.state.*
 import org.skull.king.core.usecases.captor.SkullKingPhase.ANNOUNCEMENT
+import org.skull.king.game_room.domain.GameRoom
 import kotlin.math.abs
 
 data class ReadSkullKing(
@@ -71,23 +72,31 @@ data class ReadSkullKing(
         }
     )
 
-    fun onNewRoundStarted(event: NewRoundStarted) = copy(
+    fun onNewRoundStarted(event: RoundFinished) = copy(
         roundNb = event.roundNb,
         phase = ANNOUNCEMENT,
         currentPlayerId = event.players.first().id,
-        players = event.players.map { ReadPlayer(it.id, it.gameId, it.cards.map(ReadCard::from)) }
+        players = event.players.map { new ->
+            ReadPlayer(
+                id = new.id,
+                gameId = new.gameId,
+                cards = new.cards.map(ReadCard::from),
+                name = players.find { it.id == new.id }?.name ?: ""
+            )
+        }
     )
 
     fun onGameFinished() = copy(isEnded = true)
 
     companion object {
-        fun create(event: Started): ReadSkullKing {
+        fun create(event: Started, gameRoom: GameRoom?): ReadSkullKing {
             val firstPlayerId = event.players.first().id
             return ReadSkullKing(
                 id = event.gameId,
                 players = event.players.map {
                     ReadPlayer(
                         id = it.id,
+                        name = gameRoom?.userNameOf(it.id) ?: "",
                         gameId = event.gameId,
                         cards = it.cards.map(ReadCard::from)
                     )
@@ -103,6 +112,7 @@ data class ReadSkullKing(
     fun currentRoundScoreOf(playerId: String): RoundScore? = scoreBoard[playerId]?.find { it.roundNb == roundNb }
     fun isAnnouncePhase() = phase == ANNOUNCEMENT
     fun isCardsPhase() = phase == SkullKingPhase.CARDS
+    fun subscribeUrl() = "$id/subscribe"
     fun scoreOf(playerId: String) = scoreBoard[playerId]
         ?.filter { !isEnded || roundNb == it.roundNb }
         ?.sumOf(RoundScore::score)
@@ -118,17 +128,18 @@ data class RoundScore(
     val potentialBonus: Int = 0,
     val roundNb: RoundNb
 ) {
-    fun score() = when {
-        announced == done -> when {
-            announced == 0 -> 10 * roundNb
-            else -> announced * 20
-        } + potentialBonus
+    val score
+        get() = when {
+            announced == done -> when {
+                announced == 0 -> 10 * roundNb
+                else -> announced * 20
+            } + potentialBonus
 
-        else -> when {
-            announced == 0 -> 10 * roundNb * -1
-            else -> abs(announced - done) * 10 * -1
+            else -> when {
+                announced == 0 -> 10 * roundNb * -1
+                else -> abs(announced - done) * 10 * -1
+            }
         }
-    }
 }
 
 enum class SkullKingPhase {
@@ -138,7 +149,8 @@ enum class SkullKingPhase {
 data class ReadPlayer(
     val id: String,
     val gameId: String,
-    val cards: List<ReadCard> = listOf()
+    val cards: List<ReadCard> = listOf(),
+    val name: String
 ) {
 
     fun playCardUrl(card: ReadCard) = "$gameId/players/$id/play"
@@ -157,7 +169,7 @@ data class ReadCard(
     val color: String? = null,
     val usage: String? = null,
     val name: String? = null,
-    val id: String? = null
+    val id: String
 ) {
     companion object {
         fun from(card: Card) = when (card) {
@@ -165,18 +177,18 @@ data class ReadCard(
                 type = card.type.name,
                 value = card.value,
                 color = card.color.name,
-                id = card.id()
+                id = card.id
             )
 
-            is Mermaid -> ReadCard(type = card.type.name, name = card.name.name, id = card.id())
-            is Pirate -> ReadCard(type = card.type.name, name = card.name.name, id = card.id())
-            is ScaryMary -> ReadCard(type = card.type.name, usage = card.usage.name, id = card.id())
+            is Mermaid -> ReadCard(type = card.type.name, name = card.name.name, id = card.id)
+            is Pirate -> ReadCard(type = card.type.name, name = card.name.name, id = card.id)
+            is ScaryMary -> ReadCard(type = card.type.name, usage = card.usage.name, id = card.id)
 
-            Butin -> ReadCard(type = card.type.name, id = card.id())
-            Escape -> ReadCard(type = card.type.name, id = card.id())
-            Kraken -> ReadCard(type = card.type.name, id = card.id())
-            SkullkingCard -> ReadCard(type = card.type.name, id = card.id())
-            WhiteWhale -> ReadCard(type = card.type.name, id = card.id())
+            Butin -> ReadCard(type = card.type.name, id = card.id)
+            Escape -> ReadCard(type = card.type.name, id = card.id)
+            Kraken -> ReadCard(type = card.type.name, id = card.id)
+            SkullkingCard -> ReadCard(type = card.type.name, id = card.id)
+            WhiteWhale -> ReadCard(type = card.type.name, id = card.id)
         }
     }
 

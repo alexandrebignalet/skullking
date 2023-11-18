@@ -10,6 +10,7 @@ import jakarta.ws.rs.container.PreMatching
 import jakarta.ws.rs.core.Cookie
 import jakarta.ws.rs.core.SecurityContext
 import jakarta.ws.rs.ext.Provider
+import org.jboss.logging.Logger
 
 
 data class CookieSecurityContext(val user: User) : SecurityContext {
@@ -26,7 +27,12 @@ const val AUTH_COOKIE_NAME: String = "skullking-auth"
 @PreMatching
 class CookieAuthRequestFilter : ContainerRequestFilter {
 
+    companion object {
+        val logger = Logger.getLogger(CookieAuthRequestFilter::class.java)
+    }
+
     override fun filter(crc: ContainerRequestContext) {
+        logger.info(crc)
         crc.cookies[AUTH_COOKIE_NAME]
             ?.let(Cookie::getValue)
             ?.takeIf { it.isNotEmpty() }

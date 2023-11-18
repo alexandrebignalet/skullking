@@ -42,7 +42,7 @@ data class RoundState(
         }
 
         val newRoundNb = roundNb + 1
-        return events + NewRoundStarted(
+        return events + RoundFinished(
             getId(),
             newRoundNb,
             distributeCards(
@@ -77,7 +77,7 @@ data class RoundState(
             version = version
         )
 
-        is NewRoundStarted -> AnnounceState(gameId, e.players, roundNb + 1, configuration, version)
+        is RoundFinished -> AnnounceState(gameId, e.players, roundNb + 1, configuration, version)
         is GameFinished -> OverState
         else -> this
     }
