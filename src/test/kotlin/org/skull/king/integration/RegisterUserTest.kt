@@ -23,10 +23,7 @@ class RegisterUserTest {
 
         val response = ApiHelper().authentication.register("francis")
 
-        assertThat(response.statusCode).isEqualTo(302)
-        assertThat(response.headers["Location"].value).isEqualTo(
-            "http://localhost:8081/skullking/game_rooms"
-        )
+        assertThat(response.statusCode).isEqualTo(200)
         assertThat(response.headers["Set-Cookie"].value).isEqualTo("skullking-auth=\"$userId:francis\";Version=1")
     }
 

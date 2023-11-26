@@ -167,10 +167,7 @@ class SkullKingResourceTest {
 
         // When
         val request = """{
-            "card": {
-                "type": "MERMAID",
-                "id": "MERMAID_NONE"
-            }    
+            "cardId": "MERMAID__NONE"
         }""".trimIndent()
 
         val currentUser = users.first { it.id == currentPlayerId }

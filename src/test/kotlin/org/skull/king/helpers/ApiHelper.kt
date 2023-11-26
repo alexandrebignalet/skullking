@@ -67,7 +67,8 @@ class ApiHelper {
     inner class Authentication {
         fun register(userName: String): Response =
             given()
-                .formParam("userName", userName)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .body("{ \"userName\": \"$userName\" }")
                 .`when`()
                 .post("/skullking/register")
     }

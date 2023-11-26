@@ -1,15 +1,17 @@
 package org.skull.king.application.web.controller.authentication
 
-import io.quarkus.qute.CheckedTemplate
-import io.quarkus.qute.TemplateInstance
 import jakarta.annotation.security.PermitAll
 import jakarta.inject.Inject
-import jakarta.ws.rs.*
-import jakarta.ws.rs.core.*
+import jakarta.ws.rs.Consumes
+import jakarta.ws.rs.POST
+import jakarta.ws.rs.Path
+import jakarta.ws.rs.Produces
+import jakarta.ws.rs.core.MediaType
+import jakarta.ws.rs.core.NewCookie
+import jakarta.ws.rs.core.Response
 import org.skull.king.application.infrastructure.IdGenerator
 import org.skull.king.application.infrastructure.authentication.AUTH_COOKIE_NAME
 import org.skull.king.application.infrastructure.authentication.User
-import java.net.URI
 
 
 @PermitAll
@@ -17,27 +19,8 @@ import java.net.URI
 @Produces(MediaType.APPLICATION_JSON)
 class AuthenticationResource {
 
-    @Context
-    lateinit var identity: SecurityContext
-
-
     @Inject
     lateinit var idGenerator: IdGenerator
-
-    @CheckedTemplate
-    object Templates {
-        @JvmStatic
-        external fun register(): TemplateInstance
-    }
-
-
-    @POST
-    @Path("/register")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    fun registerHTML(@FormParam("userName") userName: String): Response {
-        val user = User(idGenerator.userId(), userName)
-        return redirectToGameRooms(user)
-    }
 
     @POST
     @Path("/register")
@@ -50,18 +33,4 @@ class AuthenticationResource {
     }
 
     data class RegisterRequest(val userName: String)
-
-
-    @GET
-    @Path("/register")
-    @Produces(MediaType.APPLICATION_JSON, MediaType.TEXT_HTML)
-    fun register(): Response =
-        if (identity.userPrincipal == null) Response.ok(Templates.register()).build()
-        else redirectToGameRooms(identity.userPrincipal as User)
-
-    private fun redirectToGameRooms(user: User) = Response
-        .status(302)
-        .location(URI("/skullking/game_rooms"))
-        .header("Set-Cookie", NewCookie.Builder(AUTH_COOKIE_NAME).value(user.name).build())
-        .build()
 }

@@ -1,18 +1,15 @@
 package org.skull.king.game_room.infrastructure.web
 
-import io.quarkus.qute.CheckedTemplate
-import io.quarkus.qute.TemplateInstance
 import jakarta.annotation.security.PermitAll
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
-import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.core.Context
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.core.SecurityContext
 import org.skull.king.application.infrastructure.IdGenerator
 import org.skull.king.application.infrastructure.authentication.User
-import org.skull.king.application.web.redirectToGameRoom
+import org.skull.king.bot.domain.strategy.BotStrategy.BotStrategyType
 import org.skull.king.game_room.domain.Configuration
 import org.skull.king.game_room.domain.GameRoom
 import org.skull.king.game_room.domain.GameUser
@@ -31,19 +28,6 @@ class GameRoomResource {
     @Context
     lateinit var idGenerator: IdGenerator
 
-    @CheckedTemplate
-    object Templates {
-        @JvmStatic
-        external fun gameRooms(rooms: List<GameRoom>, user: User, error: String?): TemplateInstance
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    fun index(@QueryParam("error") error: String?): TemplateInstance {
-        val user: User = context.userPrincipal as User
-        val rooms = service.findAll()
-        return Templates.gameRooms(rooms, user, error)
-    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -62,27 +46,14 @@ class GameRoomResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_HTML)
-    fun createRoomTemplate(): Response {
-        val user: User = context.userPrincipal as User
-        service.create(GameUser.from(user), null)
-        return redirectToGameRoom()
-    }
-
-    @POST
     @Path("/{game_room_id}/bots")
+    @Consumes(MediaType.APPLICATION_JSON)
     fun addBot(
         @PathParam("game_room_id") gameRoomId: String,
-        @Context request: ContainerRequestContext
+        request: AddBotRequest,
     ): Response {
-        runCatching {
-            service.join(gameRoomId, GameUser.bot(idGenerator.botId()))
-        }.onFailure {
-
-        }
-
-        return redirectToGameRoom()
+        service.join(gameRoomId, GameUser.bot(idGenerator.botId(), request.strategy))
+        return Response.noContent().build()
     }
 
     @POST
@@ -96,17 +67,6 @@ class GameRoomResource {
     }
 
     @POST
-    @Path("/{game_room_id}/users")
-    @Produces(MediaType.TEXT_HTML)
-    fun joinHtml(
-        @PathParam("game_room_id") gameRoomId: String,
-    ): Response {
-        val user: User = context.userPrincipal as User
-        service.join(gameRoomId, GameUser.from(user))
-        return redirectToGameRoom()
-    }
-
-    @POST
     @Path("/{game_room_id}/launch")
     @Produces(MediaType.APPLICATION_JSON)
     fun launch(@PathParam("game_room_id") gameRoomId: String): Response {
@@ -116,4 +76,5 @@ class GameRoomResource {
     }
 
     data class StartResponse(val gameId: String)
+    data class AddBotRequest(val strategy: BotStrategyType = BotStrategyType.Dumbot)
 }

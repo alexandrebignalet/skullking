@@ -33,7 +33,9 @@ enum class CardType {
     JsonSubTypes.Type(value = Kraken::class, name = "KRAKEN"),
     JsonSubTypes.Type(value = WhiteWhale::class, name = "WHITE_WHALE"),
 )
-sealed class Card(val type: CardType) {
+sealed class Card(val type: CardType) : Comparable<Card> {
+    abstract override operator fun compareTo(other: Card): Int
+
     open val id get(): String = type.name
 
     companion object {
@@ -56,6 +58,25 @@ sealed class Card(val type: CardType) {
 }
 
 data class ColoredCard(val value: Int, val color: CardColor) : Card(CardType.COLORED) {
+    override fun compareTo(other: Card): Int {
+        return when (other) {
+            Butin -> 1
+            is ColoredCard -> when (other.color) {
+                color -> value.compareTo(other.value)
+                CardColor.BLACK -> -1
+                else -> 1
+            }
+
+            Escape -> 1
+            Kraken -> -1
+            is Mermaid -> -1
+            is Pirate -> -1
+            is ScaryMary -> if (other.usage == ScaryMaryUsage.ESCAPE) 1 else -1
+            SkullkingCard -> -1
+            WhiteWhale -> -1
+        }
+    }
+
     override val id get(): String = "${type}__${color}__$value"
 }
 
@@ -82,21 +103,89 @@ enum class MermaidName {
 }
 
 data class Pirate(val name: PirateName) : Card(CardType.PIRATE) {
+    override fun compareTo(other: Card): Int {
+        return when (other) {
+            Butin -> 1
+            is ColoredCard -> 1
+            Escape -> 1
+            Kraken -> -1
+            is Mermaid -> 1
+            is Pirate -> 1
+            is ScaryMary -> 1
+            SkullkingCard -> -1
+            WhiteWhale -> -1
+        }
+    }
+
     override val id get(): String = "${type}__$name"
 }
 
-object SkullkingCard : Card(CardType.SKULLKING)
+object SkullkingCard : Card(CardType.SKULLKING) {
+    override fun compareTo(other: Card): Int {
+        return when (other) {
+            Butin -> 1
+            is ColoredCard -> 1
+            Escape -> 1
+            Kraken -> -1
+            is Mermaid -> -1
+            is Pirate -> 1
+            is ScaryMary -> 1
+            SkullkingCard -> 1
+            WhiteWhale -> -1
+        }
+    }
+}
+
 data class Mermaid(val name: MermaidName = MermaidName.NONE) : Card(CardType.MERMAID) {
+    override fun compareTo(other: Card): Int {
+        return when (other) {
+            Butin -> 1
+            is ColoredCard -> 1
+            Escape -> 1
+            Kraken -> -1
+            is Mermaid -> 1
+            is Pirate -> -1
+            is ScaryMary -> if (other.usage == ScaryMaryUsage.ESCAPE) 1 else -1
+            SkullkingCard -> 1
+            WhiteWhale -> -1
+        }
+    }
+
     override val id get(): String = "${type}__$name"
 }
 
-object Escape : Card(CardType.ESCAPE)
-object Kraken : Card(CardType.KRAKEN)
-object WhiteWhale : Card(CardType.WHITE_WHALE)
-object Butin : Card(CardType.BUTIN)
+object Escape : Card(CardType.ESCAPE) {
+    override fun compareTo(other: Card): Int = -1
+}
+
+object Kraken : Card(CardType.KRAKEN) {
+    override fun compareTo(other: Card): Int = -1
+}
+
+object WhiteWhale : Card(CardType.WHITE_WHALE) {
+    override fun compareTo(other: Card): Int = -1
+}
+
+object Butin : Card(CardType.BUTIN) {
+    override fun compareTo(other: Card): Int = if (other is Butin) 1 else -1
+}
 
 enum class ScaryMaryUsage { ESCAPE, PIRATE, NOT_SET }
 data class ScaryMary(val usage: ScaryMaryUsage = ScaryMaryUsage.NOT_SET) : Card(CardType.SCARY_MARY) {
+    override fun compareTo(other: Card): Int {
+        return when (other) {
+            Butin -> 1
+            is ColoredCard -> 1
+            Escape -> 1
+            Kraken -> -1
+            is Mermaid -> 1
+            is Pirate -> 1
+            is ScaryMary -> 1
+            SkullkingCard -> -1
+            WhiteWhale -> -1
+        }
+    }
+
     override fun equals(other: Any?) = other is ScaryMary
     override fun hashCode() = 1
 }

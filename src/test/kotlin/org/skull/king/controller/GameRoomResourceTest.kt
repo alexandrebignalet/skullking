@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.skull.king.application.infrastructure.authentication.CookieCredentials
 import org.skull.king.application.infrastructure.authentication.User
 import org.skull.king.game_room.domain.GameUser
+import org.skull.king.game_room.domain.GameUser.RealGameUser
 import org.skull.king.game_room.infrastructure.GameRoomService
 import org.skull.king.game_room.infrastructure.web.CreateGameRoomResponse
 import org.skull.king.game_room.infrastructure.web.GameRoomResource.StartResponse
@@ -58,7 +59,7 @@ class GameRoomResourceTest {
 
     @Test
     fun `Should allow players to join`() {
-        val creator = GameUser("a_creator", "jean")
+        val creator = RealGameUser("a_creator", "jean")
         val gameRoomId = gameRoomService.create(creator)
 
         // default user is the joiner
@@ -70,13 +71,13 @@ class GameRoomResourceTest {
 
     @Test
     fun `Should not allow more than 6 people in the game room`() {
-        val creator = GameUser("user_id", "jean")
+        val creator = RealGameUser("user_id", "jean")
         val gameRoomId = gameRoomService.create(creator)
-        gameRoomService.join(gameRoomId, GameUser("2", "2"))
-        gameRoomService.join(gameRoomId, GameUser("3", "3"))
-        gameRoomService.join(gameRoomId, GameUser("4", "4"))
-        gameRoomService.join(gameRoomId, GameUser("5", "5"))
-        gameRoomService.join(gameRoomId, GameUser("6", "6"))
+        gameRoomService.join(gameRoomId, RealGameUser("2", "2"))
+        gameRoomService.join(gameRoomId, RealGameUser("3", "3"))
+        gameRoomService.join(gameRoomId, RealGameUser("4", "4"))
+        gameRoomService.join(gameRoomId, RealGameUser("5", "5"))
+        gameRoomService.join(gameRoomId, RealGameUser("6", "6"))
 
         val response = api.gameRoom.join(User("10", "michel"), gameRoomId)
         Assertions.assertThat(response.statusCode).isEqualTo(400)
@@ -95,8 +96,8 @@ class GameRoomResourceTest {
     fun `Should start a game when the game room contains enough player`() {
         val creator = defaultGameUser
         val gameRoomId = gameRoomService.create(creator)
-        gameRoomService.join(gameRoomId, GameUser("2", "2"))
-        gameRoomService.join(gameRoomId, GameUser("3", "3"))
+        gameRoomService.join(gameRoomId, RealGameUser("2", "2"))
+        gameRoomService.join(gameRoomId, RealGameUser("3", "3"))
 
         val startResponse = api.gameRoom.launch(defaultUser, gameRoomId)
             .body.`as`(StartResponse::class.java)
@@ -108,10 +109,10 @@ class GameRoomResourceTest {
 
     @Test
     fun `Should only let creator launch the game`() {
-        val creator = GameUser("user_id", "hugues")
+        val creator = RealGameUser("user_id", "hugues")
         val gameRoomId = gameRoomService.create(creator)
         gameRoomService.join(gameRoomId, defaultGameUser)
-        gameRoomService.join(gameRoomId, GameUser("3", "michel"))
+        gameRoomService.join(gameRoomId, RealGameUser("3", "michel"))
 
         val response = api.gameRoom.launch(User("3", "michel"), gameRoomId)
 

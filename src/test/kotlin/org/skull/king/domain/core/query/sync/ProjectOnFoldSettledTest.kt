@@ -1,6 +1,7 @@
 package org.skull.king.domain.core.query.sync
 
 import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.skull.king.application.infrastructure.IdGenerator
@@ -11,7 +12,7 @@ import org.skull.king.core.usecases.captor.*
 class ProjectOnFoldSettledTest {
 
     private val repository = ReadSkullKingRepository()
-    private val eventPubSub = mockk<EventPubSub>()
+    private val eventPubSub = mockk<EventPubSub>(relaxed = true)
 
     @Test
     fun `should project butinAllies correctly`() {
@@ -21,16 +22,15 @@ class ProjectOnFoldSettledTest {
 
         val captor = ProjectOnFoldSettled(repository, eventPubSub)
 
-        captor.execute(
-            FoldSettled(
-                skullKingId,
-                "1",
-                20,
-                true,
-                listOf("2"),
-                0
-            )
+        val event = FoldSettled(
+            skullKingId,
+            "1",
+            20,
+            true,
+            listOf("2"),
+            0
         )
+        captor.execute(event)
 
         val game = repository[skullKingId]
         Assertions.assertThat(game?.scoreBoard).isEqualTo(
@@ -39,6 +39,7 @@ class ProjectOnFoldSettledTest {
                 "2" to listOf(RoundScore(announced = 0, done = 0, roundNb = 1, potentialBonus = 20))
             )
         )
+        verify { eventPubSub.publish(EventPubSub.TopicId(event.gameId), event) }
     }
 
     private fun setupFold(gameId: String) {

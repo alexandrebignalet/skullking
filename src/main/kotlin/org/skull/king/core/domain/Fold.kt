@@ -216,4 +216,5 @@ data class Fold(val cardsByPlayer: Map<PlayerId, Card> = mapOf()) {
     )
 
     fun cards() = values.map { it.card }
+    fun isEmpty() = size == 0
 }

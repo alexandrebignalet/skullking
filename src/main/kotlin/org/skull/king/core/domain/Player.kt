@@ -15,7 +15,8 @@ data class ReadyPlayer(
     override val id: String,
     override val gameId: String,
     override val cards: List<Card>,
-    val announce: Int
+    val announce: Int,
+    val done: Int = 0,
 ) : Player
 
 fun List<ReadyPlayer>.sortPlayersForNextRound(lastFoldWinnerPlayerId: PlayerId): List<ReadyPlayer> {

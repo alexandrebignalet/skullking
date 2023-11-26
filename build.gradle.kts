@@ -37,6 +37,7 @@ dependencies {
     testImplementation("io.rest-assured:rest-assured")
     testApi("org.assertj:assertj-core:3.11.1")
     testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
+    testImplementation("com.approvaltests:approvaltests:22.3.2")
 }
 
 group = "org.skull.king"

@@ -7,6 +7,7 @@ data class RoundState(
     val players: List<ReadyPlayer>,
     val roundNb: Int,
     val currentFold: Fold = Fold(),
+    val discarded: List<Fold> = listOf(),
     val foldPlayedNb: Int = 0,
     val firstPlayerId: String,
     val configuration: GameConfiguration,
@@ -57,27 +58,41 @@ data class RoundState(
 
     override fun compose(e: SkullKingEvent, version: Int) = when (e) {
         is CardPlayed -> RoundState(
-            gameId,
-            removeCardFromPlayerHand(e),
-            roundNb,
-            currentFold.receive(e),
-            foldPlayedNb,
-            firstPlayerId,
-            configuration,
-            version
-        )
-
-        is FoldSettled -> RoundState(
-            gameId,
-            players.sortPlayersForNextRound(e.winnerPlayerId),
-            roundNb,
-            foldPlayedNb = foldPlayedNb + 1,
+            gameId = gameId,
+            players = removeCardFromPlayerHand(e),
+            roundNb = roundNb,
+            currentFold = currentFold.receive(e),
+            discarded = discarded,
+            foldPlayedNb = foldPlayedNb,
             firstPlayerId = firstPlayerId,
             configuration = configuration,
             version = version
         )
 
-        is RoundFinished -> AnnounceState(gameId, e.players, roundNb + 1, configuration, version)
+        is FoldSettled -> RoundState(
+            gameId = gameId,
+            players = players
+                .map {
+                    if (it.id == e.winnerPlayerId && e.won) it.copy(done = it.done + 1)
+                    else it
+                }
+                .sortPlayersForNextRound(e.winnerPlayerId),
+            roundNb = roundNb,
+            foldPlayedNb = foldPlayedNb + 1,
+            firstPlayerId = firstPlayerId,
+            configuration = configuration,
+            discarded = discarded + currentFold,
+            version = version
+        )
+
+        is RoundFinished -> AnnounceState(
+            gameId = gameId,
+            players = e.players,
+            roundNb = roundNb + 1,
+            configuration = configuration,
+            version = version
+        )
+
         is GameFinished -> OverState
         else -> this
     }

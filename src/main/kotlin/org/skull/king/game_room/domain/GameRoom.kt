@@ -2,6 +2,7 @@ package org.skull.king.game_room.domain
 
 import io.quarkus.qute.TemplateData
 import org.skull.king.application.infrastructure.authentication.User
+import org.skull.king.game_room.domain.GameUser.BotGameUser
 import java.time.Instant
 
 @TemplateData
@@ -15,7 +16,7 @@ data class GameRoom(
     val configuration: Configuration? = null
 ) {
 
-    val bots: List<GameUser> = users.filter { it.type == GameUserType.BOT }
+    val bots: List<BotGameUser> = users.filterIsInstance<BotGameUser>()
 
     fun isFull() = users.count() == 6
 
