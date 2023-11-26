@@ -7,6 +7,7 @@ const val SKULLKING_ID_PREFIX = "skg_"
 const val USER_ID_PREFIX = "usr_"
 const val GAME_ROOM_ID_PREFIX = "gr_"
 const val BOT_ID_PREFIX = "bot_"
+const val EXPERIMENT_ID_PREFIX = "exp_"
 
 @ApplicationScoped
 class IdGenerator {
@@ -15,4 +16,5 @@ class IdGenerator {
     fun userId() = USER_ID_PREFIX + KsuidCreator.getKsuid()
     fun gameRoomId() = GAME_ROOM_ID_PREFIX + KsuidCreator.getKsuid()
     fun botId() = BOT_ID_PREFIX + KsuidCreator.getKsuid()
+    fun experimentId() = EXPERIMENT_ID_PREFIX + KsuidCreator.getKsuid()
 }

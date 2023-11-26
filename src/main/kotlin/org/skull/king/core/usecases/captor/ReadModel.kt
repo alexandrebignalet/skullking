@@ -120,6 +120,9 @@ data class ReadSkullKing(
 
 typealias ScoreBoard = Map<String, List<RoundScore>>
 
+fun ScoreBoard.winner() =
+    map { (playerId, roundScores) -> playerId to roundScores.sumOf { it.score } }.maxByOrNull { it.second }
+
 typealias RoundNb = Int
 
 data class RoundScore(

@@ -30,6 +30,8 @@ dependencies {
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
     implementation("com.google.guava:guava:32.1.3-jre")
     implementation("com.github.f4b6a3:ksuid-creator:4.1.0")
+    implementation("io.quarkus:quarkus-scheduler")
+
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.mockk:mockk:1.13.8")
