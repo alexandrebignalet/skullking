@@ -5,10 +5,15 @@ import jakarta.ws.rs.container.ContainerResponseContext
 import jakarta.ws.rs.container.ContainerResponseFilter
 import jakarta.ws.rs.core.NewCookie
 import jakarta.ws.rs.ext.Provider
+import org.jboss.logging.Logger
 import java.security.Principal
 
 @Provider
 class CookieAuthResponseFilter : ContainerResponseFilter {
+
+    companion object {
+        private val logger = Logger.getLogger(CookieAuthResponseFilter::class.java)
+    }
 
     override fun filter(request: ContainerRequestContext, response: ContainerResponseContext) {
         val principal: Principal? = request.securityContext.userPrincipal
@@ -22,6 +27,8 @@ class CookieAuthResponseFilter : ContainerResponseFilter {
             //the principal has been unset during the response, delete the cookie
             response.headers.remove("Set-Cookie")
         }
+
+        logger.info("${request.request.method}:${request.uriInfo.path} -> ${response.status} ${response.entity}")
     }
 }
 

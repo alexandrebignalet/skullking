@@ -26,13 +26,8 @@ const val AUTH_COOKIE_NAME: String = "skullking-auth"
 @Provider
 @PreMatching
 class CookieAuthRequestFilter : ContainerRequestFilter {
-
-    companion object {
-        val logger = Logger.getLogger(CookieAuthRequestFilter::class.java)
-    }
-
+    
     override fun filter(crc: ContainerRequestContext) {
-        logger.info(crc)
         crc.cookies[AUTH_COOKIE_NAME]
             ?.let(Cookie::getValue)
             ?.takeIf { it.isNotEmpty() }
